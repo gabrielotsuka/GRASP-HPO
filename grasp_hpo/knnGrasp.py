@@ -1,7 +1,7 @@
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import f1_score
 from sklearn.neighbors import KNeighborsClassifier
 import numpy as np
 from queue import PriorityQueue
@@ -20,21 +20,24 @@ hyperparameters = {'n_neighbors': np.arange(1, 30, 5)}
 intermediateResultsSize = 3
 print('Full array: ' + str(hyperparameters['n_neighbors']))
 print()
+
 for hyperparameter in hyperparameters:
     # building phase
     bestIntermediateResults = PriorityQueue()
     windowMinValue = 0
     windowMaxValue = hyperparameters[hyperparameter].size
-    print('Windows: ')
+    print('Exploratory accuracy: ')
     for idx, hyperparameterValue in enumerate(hyperparameters[hyperparameter]):
         knn_classifier = KNeighborsClassifier(n_neighbors=hyperparameterValue)
         knn_classifier.fit(xTrain, yTrain)
         yPred = knn_classifier.predict(xTest)
-        accuracy = accuracy_score(yTest, yPred)
+        f1Socre = f1_score(yTest, yPred, average='weighted')
 
-        print(hyperparameters[hyperparameter][max(windowMinValue, idx-1):min(idx+2, windowMaxValue)])
+        print(str(hyperparameterValue) + ' -> ' +
+              str(hyperparameters[hyperparameter][max(windowMinValue, idx-1):min(idx+2, windowMaxValue)]) + ': ' +
+              str(f1Socre))
 
-        bestIntermediateResults.put((accuracy, hyperparameterValue))
+        bestIntermediateResults.put((f1Socre, hyperparameterValue))
         if bestIntermediateResults.qsize() > intermediateResultsSize:
             bestIntermediateResults.get()
 
@@ -49,8 +52,8 @@ for hyperparameter in hyperparameters:
             knn_classifier = KNeighborsClassifier(n_neighbors=i)
             knn_classifier.fit(xTrain, yTrain)
             yPred = knn_classifier.predict(xTest)
-            accuracy = accuracy_score(yTest, yPred)
-            if accuracy > best[0]:
-                best = (accuracy, i)
+            f1Socre = f1_score(yTest, yPred, average='weighted')
+            if f1Socre > best[0]:
+                best = (f1Socre, i)
 
     print('Melhor hyperparameter: ' + str(best[1]))
