@@ -123,6 +123,6 @@ while not best_intermediate_combinations.empty():
         local_best_solution = temporary_solution
 
 
-print("Hyperparameters: " + local_best_solution)
+print("Hyperparameters: " + str(local_best_solution))
 print("Achieved best score: " + str(local_best_score))
 
