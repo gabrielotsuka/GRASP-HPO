@@ -34,6 +34,13 @@ hyperparameter_ranges = {
 }
 
 
+def get_random_hyperparameter_value(hyperparameter):
+    if hyperparameter in ['n_estimators', 'max_depth']:
+        return random.randint(hyperparameter_ranges[hyperparameter][0], hyperparameter_ranges[hyperparameter][1])
+    else:
+        return random.uniform(hyperparameter_ranges[hyperparameter][0], hyperparameter_ranges[hyperparameter][1])
+
+
 def building_phase():
     global x_train, x_test
     number_of_iterations = 20
@@ -46,26 +53,11 @@ def building_phase():
         x_test = scaler.transform(x_test)
 
         selected_hyperparameters = {
-            'n_estimators': random.randint(
-                    hyperparameter_ranges['n_estimators'][0],
-                    hyperparameter_ranges['n_estimators'][1]
-            ),
-            'max_depth': random.randint(
-                    hyperparameter_ranges['max_depth'][0],
-                    hyperparameter_ranges['max_depth'][1]
-            ),
-            'colsample_bytree': random.uniform(
-                hyperparameter_ranges['colsample_bytree'][0],
-                hyperparameter_ranges['colsample_bytree'][1]
-            ),
-            'reg_lambda': random.uniform(
-                hyperparameter_ranges['reg_lambda'][0],
-                hyperparameter_ranges['reg_lambda'][1]
-            ),
-            'subsample': random.uniform(
-                hyperparameter_ranges['subsample'][0],
-                hyperparameter_ranges['subsample'][1]
-            )
+            'n_estimators': get_random_hyperparameter_value('n_estimators'),
+            'max_depth': get_random_hyperparameter_value('max_depth'),
+            'colsample_bytree': get_random_hyperparameter_value('colsample_bytree'),
+            'reg_lambda': get_random_hyperparameter_value('reg_lambda'),
+            'subsample': get_random_hyperparameter_value('subsample')
         }
 
         print(selected_hyperparameters)
@@ -90,23 +82,23 @@ def hill_climb(current_solution):
 
     for i in range(max_iterations):
         print(i)
-        neighbor_solution = current_solution.copy()
-        param_to_perturb = random.choice(list(neighbor_solution.keys()))
 
-        if param_to_perturb in ['n_estimators', 'max_depth']:
-            neighbor_solution[param_to_perturb] = random.randint(*hyperparameter_ranges[param_to_perturb])
-        else:
-            neighbor_solution[param_to_perturb] = random.uniform(*hyperparameter_ranges[param_to_perturb])
-
+        neighbor_solution = generate_neighbor(current_solution)
         neighbor_score = evaluate_solution(neighbor_solution)
 
         if neighbor_score > best_score:
             best_solution = neighbor_solution
             best_score = neighbor_score
-
         current_solution = neighbor_solution
 
     return best_score, best_solution
+
+
+def generate_neighbor(current_solution):
+    neighbor_solution = current_solution.copy()
+    param_to_perturb = random.choice(list(neighbor_solution.keys()))
+    neighbor_solution[param_to_perturb] = get_random_hyperparameter_value(param_to_perturb)
+    return neighbor_solution
 
 
 outer_counter = 1
